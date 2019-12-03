@@ -1,24 +1,47 @@
-const path = require('path');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const webpack = require('webpack');
 
 module.exports = {
-	entry: './src/index.js',
-	output: {
-		path: path.resolve(__dirname, 'dist'),
-		filename: 'app.js'
+	entry: {
+		app: './index.js',
 	},
+	context: `${__dirname}/static_src`,
+	output: {
+		path: `${__dirname}/static/build`,
+		filename: 'app.js',
+	},
+
 	module: {
 		rules: [
 			{
 				test: /\.(js|jsx)$/,
-				use: ["babel-loader"],
-				exclude: /node_modules/,
+				include: path.resolve(__dirname, "static_src"),
+				exclude: path.resolve(__dirname, "node_modules"),
+				loader: 'babel-loader',
+				options: {
+					presets: ['@babel/env', '@babel/react'],
+					plugins: [
+						[
+							"@babel/plugin-proposal-class-properties",
+							{
+								"loose": true
+							}
+						]
+					]
+				}
 			}
-		]
+		],
 	},
-	plugins: [
-    new HtmlWebpackPlugin({
-      template: "./public/index.html"
-    })
-  ]
+
+	resolve: {
+		modules: [path.resolve(__dirname, "static_src"), 'node_modules'],
+		extensions: ['.js', '.jsx'],
+	},
+
+	devServer: {
+		port: 3000,
+		historyApiFallback: {
+			index: 'index.html'
+		}
+	},
 };
