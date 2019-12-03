@@ -4,7 +4,8 @@ import Message from './Message';
 export default class MessageField extends React.Component {
   state = {
     messages: [],
-    text: ''
+    text: '',
+    texting: false
   };
 
   componentDidUpdate() {
@@ -12,19 +13,19 @@ export default class MessageField extends React.Component {
       const messages = this.state.messages;
       const lastMessage = messages[messages.length - 1];
 
-      if (lastMessage.author !== 'Dummy') {
+      if (!this.state.texting && lastMessage.author !== 'Dummy') {
         const robotAnswer = {
           author: 'Dummy',
           text: 'Say - Ok, Google'
         };
         this.setState({ messages: [...this.state.messages, robotAnswer] });
       }
-    }, 1000);
+    }, 3000);
   }
 
   onChangeMessage = event => {
     const text = event.target.value;
-    this.setState({ text });
+    this.setState({ text, texting: true });
   }
 
   sendMessage = () => {
@@ -33,7 +34,7 @@ export default class MessageField extends React.Component {
       author: 'You',
       text: this.state.text
     };
-    this.setState({ messages: [...messages, currentMessage], text: '' });
+    this.setState({ messages: [...messages, currentMessage], text: '', texting: false });
   };
 
   render() {
