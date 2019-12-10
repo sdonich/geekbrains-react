@@ -1,17 +1,11 @@
 import React from 'react';
-import ReactDom from 'react-dom';
-import MessageField from './components/MessageField';
+import ReactDOM from 'react-dom';
+import { Layout } from './components/Layout';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
-class App extends React.Component {
-	constructor() {
-		super();
-	}
-
-	render() {
-		return (
-			<MessageField />
-		);
-	}
-}
-
-ReactDom.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+	<MuiThemeProvider>
+		<Layout />
+	</MuiThemeProvider>,
+	document.getElementById('root'),
+);

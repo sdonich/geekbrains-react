@@ -1,54 +1,71 @@
 import React from 'react';
-import Message from './Message';
+import { TextField, FloatingActionButton } from 'material-ui';
+import SendIcon from 'material-ui/svg-icons/content/send';
+import { Message } from './Message';
+import '../styles/styles.css';
 
 export default class MessageField extends React.Component {
   state = {
-    messages: [],
-    text: '',
-    texting: false
+    messages: [{ text: "Привет!", sender: 'bot' }, { text: "Как дела?", sender: 'bot' }],
+    input: '',
   };
 
-  componentDidUpdate() {
-    setTimeout(() => {
-      const messages = this.state.messages;
-      const lastMessage = messages[messages.length - 1];
-
-      if (!this.state.texting && lastMessage.author !== 'Dummy') {
-        const robotAnswer = {
-          author: 'Dummy',
-          text: 'Say - Ok, Google'
-        };
-        this.setState({ messages: [...this.state.messages, robotAnswer] });
-      }
-    }, 3000);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.messages.length < this.state.messages.length &&
+      this.state.messages[this.state.messages.length - 1].sender === 'me') {
+      setTimeout(() =>
+        this.setState({
+          messages: [...this.state.messages, { text: 'Не приставай ко мне, я робот!', sender: 'bot' }]
+        }),
+        1000);
+    }
   }
 
-  onChangeMessage = event => {
-    const text = event.target.value;
-    this.setState({ text, texting: true });
-  }
+  handleClick = (message) => {
+    this.sendMessage(message)
+  };
 
-  sendMessage = () => {
-    const { messages } = this.state;
-    const currentMessage = {
-      author: 'You',
-      text: this.state.text
-    };
-    this.setState({ messages: [...messages, currentMessage], text: '', texting: false });
+  handleChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleKeyUp = (event, message) => {
+    if (event.keyCode === 13) {
+      this.sendMessage(message)
+    }
+  };
+
+  sendMessage = (message) => {
+    this.setState({
+      messages: [...this.state.messages, { text: message, sender: 'me' }],
+      input: '',
+    });
   };
 
   render() {
-    const messages = this.state.messages.length > 0 ?
-      this.state.messages.map((message, id) => <Message key={id} text={message.text} author={message.author} />)
-      :
-      null;
+    const messageElements = this.state.messages.map((message, index) => (
+      <Message key={index} text={message.text} sender={message.sender} />));
 
     return (
-      <div>
-        {messages}
-        <input value={this.state.text} placeholder="type..." onChange={this.onChangeMessage} />
-        <button onClick={this.sendMessage}>Send</button>
-      </div>
-    );
-  };
+      <React.Fragment>
+        <div className="message-field">
+          {messageElements}
+        </div>
+        <div style={{ width: '100%', display: 'flex' }}>
+          <TextField
+            name="input"
+            fullWidth={true}
+            hintText="Введите сообщение"
+            style={{ fontSize: '22px' }}
+            onChange={this.handleChange}
+            value={this.state.input}
+            onKeyUp={(event) => this.handleKeyUp(event, this.state.input)}
+          />
+          <FloatingActionButton onClick={() => this.handleClick(this.state.input)}>
+            <SendIcon />
+          </FloatingActionButton>
+        </div>
+      </React.Fragment>
+    )
+  }
 }
