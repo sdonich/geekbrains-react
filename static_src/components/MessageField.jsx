@@ -5,7 +5,12 @@ import { Message } from './Message';
 import '../styles/styles.css';
 
 export default class MessageField extends React.Component {
+  static defaultProps = {
+    chatId: 1,
+  };
+
   state = {
+    chats: [[1, 2], [], []],
     messages: [{ text: "Привет!", sender: 'bot' }, { text: "Как дела?", sender: 'bot' }],
     input: '',
   };
@@ -35,16 +40,29 @@ export default class MessageField extends React.Component {
     }
   };
 
-  sendMessage = (message) => {
+  sendMessage = (message, sender) => {
+    const currentChat = this.props.chatId - 1;
+    const { chats } = this.state;
+    chats[currentChat] = [...chats[currentChat], this.state.messages.length + 1];
+
     this.setState({
-      messages: [...this.state.messages, { text: message, sender: 'me' }],
+      messages: [...this.state.messages, { text: message, sender }],
       input: '',
+      chats: chats
     });
   };
 
   render() {
-    const messageElements = this.state.messages.map((message, index) => (
-      <Message key={index} text={message.text} sender={message.sender} />));
+    const { chats, messages, input } = this.state;
+    const { chatId } = this.props;
+
+    const messageElements = chats[chatId - 1].map(messageId => (
+      <Message
+        key={messageId}
+        text={messages[messageId - 1].text}
+        sender={messages[messageId - 1].sender}
+      />
+    ));
 
     return (
       <React.Fragment>
@@ -59,9 +77,9 @@ export default class MessageField extends React.Component {
             style={{ fontSize: '22px' }}
             onChange={this.handleChange}
             value={this.state.input}
-            onKeyUp={(event) => this.handleKeyUp(event, this.state.input)}
+            onKeyUp={(event) => this.handleKeyUp(event, input, 'me')}
           />
-          <FloatingActionButton onClick={() => this.handleClick(this.state.input)}>
+          <FloatingActionButton onClick={() => this.handleClick(input, 'me')}>
             <SendIcon />
           </FloatingActionButton>
         </div>
