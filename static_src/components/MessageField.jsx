@@ -10,59 +10,61 @@ export default class MessageField extends React.Component {
   };
 
   state = {
-    chats: [[1, 2], [], []],
-    messages: [{ text: "Привет!", sender: 'bot' }, { text: "Как дела?", sender: 'bot' }],
+    messages: [{ text: "Привет!", sender: 'bot', chatId: 1 }, { text: "Как дела?", sender: 'bot', chatId: 1 }],
     input: '',
   };
 
   componentDidUpdate(prevProps, prevState) {
+    const chatId = this.props.chatId;
+
     if (prevState.messages.length < this.state.messages.length &&
       this.state.messages[this.state.messages.length - 1].sender === 'me') {
+      const robotChatId = prevProps.chatId === chatId ? chatId : prevProps.chatId;
+
       setTimeout(() =>
         this.setState({
-          messages: [...this.state.messages, { text: 'Не приставай ко мне, я робот!', sender: 'bot' }]
+          messages: [...this.state.messages, { text: 'Не приставай ко мне, я робот!', sender: 'bot', chatId: robotChatId }]
         }),
         1000);
     }
   }
 
-  handleClick = (message) => {
-    this.sendMessage(message)
+  handleClick = (message, sender) => {
+    this.sendMessage(message, sender)
   };
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
 
-  handleKeyUp = (event, message) => {
+  handleKeyUp = (event, message, sender) => {
     if (event.keyCode === 13) {
-      this.sendMessage(message)
+      this.sendMessage(message, sender)
     }
   };
 
   sendMessage = (message, sender) => {
-    const currentChat = this.props.chatId - 1;
-    const { chats } = this.state;
-    chats[currentChat] = [...chats[currentChat], this.state.messages.length + 1];
+    const currentMessage = { text: message, sender, chatId: this.props.chatId };
 
     this.setState({
-      messages: [...this.state.messages, { text: message, sender }],
-      input: '',
-      chats: chats
+      messages: [...this.state.messages, currentMessage],
+      input: ''
     });
   };
 
   render() {
-    const { chats, messages, input } = this.state;
+    const { messages, input } = this.state;
     const { chatId } = this.props;
 
-    const messageElements = chats[chatId - 1].map(messageId => (
-      <Message
-        key={messageId}
-        text={messages[messageId - 1].text}
-        sender={messages[messageId - 1].sender}
-      />
-    ));
+    const messageElements = messages
+      .filter(message => message.chatId === chatId)
+      .map((message, id) => (
+        <Message
+          key={id}
+          text={message.text}
+          sender={message.sender}
+        />
+      ));
 
     return (
       <React.Fragment>
