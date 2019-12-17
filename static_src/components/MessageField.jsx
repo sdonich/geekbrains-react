@@ -5,46 +5,66 @@ import { Message } from './Message';
 import '../styles/styles.css';
 
 export default class MessageField extends React.Component {
+  static defaultProps = {
+    chatId: 1,
+  };
+
   state = {
-    messages: [{ text: "Привет!", sender: 'bot' }, { text: "Как дела?", sender: 'bot' }],
+    messages: [{ text: "Привет!", sender: 'bot', chatId: 1 }, { text: "Как дела?", sender: 'bot', chatId: 1 }],
     input: '',
   };
 
   componentDidUpdate(prevProps, prevState) {
+    const chatId = this.props.chatId;
+
     if (prevState.messages.length < this.state.messages.length &&
       this.state.messages[this.state.messages.length - 1].sender === 'me') {
+      const robotChatId = prevProps.chatId === chatId ? chatId : prevProps.chatId;
+
       setTimeout(() =>
         this.setState({
-          messages: [...this.state.messages, { text: 'Не приставай ко мне, я робот!', sender: 'bot' }]
+          messages: [...this.state.messages, { text: 'Не приставай ко мне, я робот!', sender: 'bot', chatId: robotChatId }]
         }),
         1000);
     }
   }
 
-  handleClick = (message) => {
-    this.sendMessage(message)
+  handleClick = (message, sender) => {
+    this.sendMessage(message, sender)
   };
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
 
-  handleKeyUp = (event, message) => {
+  handleKeyUp = (event, message, sender) => {
     if (event.keyCode === 13) {
-      this.sendMessage(message)
+      this.sendMessage(message, sender)
     }
   };
 
-  sendMessage = (message) => {
+  sendMessage = (message, sender) => {
+    const currentMessage = { text: message, sender, chatId: this.props.chatId };
+
     this.setState({
-      messages: [...this.state.messages, { text: message, sender: 'me' }],
-      input: '',
+      messages: [...this.state.messages, currentMessage],
+      input: ''
     });
   };
 
   render() {
-    const messageElements = this.state.messages.map((message, index) => (
-      <Message key={index} text={message.text} sender={message.sender} />));
+    const { messages, input } = this.state;
+    const { chatId } = this.props;
+
+    const messageElements = messages
+      .filter(message => message.chatId === chatId)
+      .map((message, id) => (
+        <Message
+          key={id}
+          text={message.text}
+          sender={message.sender}
+        />
+      ));
 
     return (
       <React.Fragment>
@@ -59,9 +79,9 @@ export default class MessageField extends React.Component {
             style={{ fontSize: '22px' }}
             onChange={this.handleChange}
             value={this.state.input}
-            onKeyUp={(event) => this.handleKeyUp(event, this.state.input)}
+            onKeyUp={(event) => this.handleKeyUp(event, input, 'me')}
           />
-          <FloatingActionButton onClick={() => this.handleClick(this.state.input)}>
+          <FloatingActionButton onClick={() => this.handleClick(input, 'me')}>
             <SendIcon />
           </FloatingActionButton>
         </div>
