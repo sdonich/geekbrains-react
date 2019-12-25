@@ -12,7 +12,6 @@ export const getChat = async (id) => {
 
 export const sendMessage = async (message, id) => {
   const data = await api.sendMessage(message, id);
-  console.log(data);
 
   return {
     type: types.SEND_MESSAGE,
