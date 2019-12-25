@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import Router from './components/Router';
 import { BrowserRouter } from 'react-router-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { Provider } from 'react-redux';
 import store from './store';
 
 ReactDOM.render(
